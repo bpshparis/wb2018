@@ -1,0 +1,6 @@
+{
+  "name": "S2T_KEY_CMD",
+  "path": "/tmp",
+  "cmd": "/usr/local/bin/ibmcloud service key-show s2t0 user0",
+  "nr": 4
+}

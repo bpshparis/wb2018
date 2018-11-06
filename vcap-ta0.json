@@ -1,0 +1,23 @@
+[
+  {
+    "name": "ta0",
+    "instance_name": "ta0",
+    "binding_name": null,
+    "credentials": {
+      "url": "https://gateway-fra.watsonplatform.net/tone-analyzer/api",
+      "username": "381a54a4-a531-46ff-83d8-6a87d7c4db6c",
+      "password": "sHC2ZFNKmyec"
+    },
+    "syslog_drain_url": null,
+    "volume_mounts": [],
+    "label": "tone_analyzer",
+    "provider": null,
+    "plan": "lite",
+    "tags": [
+      "watson",
+      "ibm_created",
+      "ibm_dedicated_public",
+      "lite"
+    ]
+  }
+]

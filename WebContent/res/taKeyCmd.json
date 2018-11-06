@@ -1,0 +1,6 @@
+{
+  "name": "TA_KEY_CMD",
+  "path": "/tmp",
+  "cmd": "/usr/local/bin/ibmcloud service key-show ta0 user0",
+  "nr": 4
+}

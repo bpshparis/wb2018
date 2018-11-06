@@ -1,0 +1,13 @@
+VCAP_SERVICES=$(/usr/local/bin/ibmcloud cf ssh ekaly0 -c 'echo $VCAP_SERVICES' | awk 'NR>2')
+
+/usr/local/bin/ibmcloud service key-show ta0 user0 | awk 'NR>4'
+
+/opt/JDK/bin/jar cvMf /opt/wlp/usr/servers/defaultServer/apps/ekaly.war -C WebContent/ .
+
+/usr/local/bin/ibmcloud app route-delete eu-de.mybluemix.net -n ekaly -f
+
+/usr/local/bin/ibmcloud service unbind ekaly0 ta0
+
+/usr/local/bin/ibmcloud app delete ekaly0 -f
+
+/usr/local/bin/ibmcloud cf push ekaly0 -p /opt/wlp/usr/servers/defaultServer

@@ -1,0 +1,15 @@
+applications:
+# WARNING: Only hyphen (e.g. -) are supported in hostname. Don't add any dot.
+# host must be unique in domain
+- host: ekaly
+  disk: 256M
+  #name must be unique in your space
+  name: ekaly
+  #path: ./WebContent
+  #domain must be available in your space
+  domain: eu-de.mybluemix.net
+  mem: 256M
+  instances: 1
+  services:
+  - ta0
+  - s2t0

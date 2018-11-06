@@ -1,0 +1,6 @@
+{
+  "name": "IC_TARGET_CMD",
+  "path": "/tmp",
+  "cmd": "/usr/local/bin/ibmcloud target --cf-api https://api.eu-de.bluemix.net -o teatcher0@bpshparis.com -s dev",
+  "nr": 4
+}

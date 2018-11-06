@@ -1,0 +1,50 @@
+{
+  "utterances_tone": [
+    {
+      "utterance_id": 0,
+      "utterance_text": "where do you work",
+      "tones": []
+    },
+    {
+      "utterance_id": 1,
+      "utterance_text": "I work for a big company",
+      "tones": []
+    },
+    {
+      "utterance_id": 2,
+      "utterance_text": "what kind of company do you work for",
+      "tones": []
+    },
+    {
+      "utterance_id": 3,
+      "utterance_text": "I work for an import company and %HESITATION what about you",
+      "tones": []
+    },
+    {
+      "utterance_id": 4,
+      "utterance_text": "I work at a bank",
+      "tones": []
+    },
+    {
+      "utterance_id": 5,
+      "utterance_text": "are you a bank teller",
+      "tones": [
+        {
+          "score": 0.76734,
+          "tone_id": "frustrated",
+          "tone_name": "Frustrated"
+        },
+        {
+          "score": 0.61125,
+          "tone_id": "sad",
+          "tone_name": "Sad"
+        }
+      ]
+    },
+    {
+      "utterance_id": 6,
+      "utterance_text": "now all I am the owner",
+      "tones": []
+    }
+  ]
+}

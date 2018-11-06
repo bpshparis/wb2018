@@ -1,0 +1,624 @@
+   {
+   "results": [
+      {
+         "alternatives": [
+            {
+               "timestamps": [
+                  [
+                     "where", 
+                     0.63, 
+                     0.92
+                  ], 
+                  [
+                     "do", 
+                     0.92, 
+                     1.04
+                  ], 
+                  [
+                     "you", 
+                     1.04, 
+                     1.21
+                  ], 
+                  [
+                     "work", 
+                     1.21, 
+                     1.78
+                  ]
+               ], 
+               "confidence": 0.999, 
+               "transcript": "where do you work "
+            }
+         ], 
+         "final": true
+      }, 
+      {
+         "alternatives": [
+            {
+               "timestamps": [
+                  [
+                     "I", 
+                     2.62, 
+                     2.68
+                  ], 
+                  [
+                     "work", 
+                     2.68, 
+                     2.93
+                  ], 
+                  [
+                     "for", 
+                     2.93, 
+                     3.08
+                  ], 
+                  [
+                     "a", 
+                     3.08, 
+                     3.18
+                  ], 
+                  [
+                     "big", 
+                     3.18, 
+                     3.54
+                  ], 
+                  [
+                     "company", 
+                     3.54, 
+                     4.29
+                  ]
+               ], 
+               "confidence": 0.954, 
+               "transcript": "I work for a big company "
+            }
+         ], 
+         "final": true
+      }, 
+      {
+         "alternatives": [
+            {
+               "timestamps": [
+                  [
+                     "what", 
+                     5.14, 
+                     5.41
+                  ], 
+                  [
+                     "kind", 
+                     5.41, 
+                     5.72
+                  ], 
+                  [
+                     "of", 
+                     5.72, 
+                     5.81
+                  ], 
+                  [
+                     "company", 
+                     5.81, 
+                     6.25
+                  ], 
+                  [
+                     "do", 
+                     6.25, 
+                     6.4
+                  ], 
+                  [
+                     "you", 
+                     6.4, 
+                     6.56
+                  ], 
+                  [
+                     "work", 
+                     6.56, 
+                     6.83
+                  ], 
+                  [
+                     "for", 
+                     6.83, 
+                     7.22
+                  ], 
+                  [
+                     "I", 
+                     7.7, 
+                     7.77
+                  ], 
+                  [
+                     "work", 
+                     7.77, 
+                     8.04
+                  ], 
+                  [
+                     "for", 
+                     8.04, 
+                     8.34
+                  ], 
+                  [
+                     "an", 
+                     8.34, 
+                     8.57
+                  ], 
+                  [
+                     "import", 
+                     8.57, 
+                     9.08
+                  ], 
+                  [
+                     "company", 
+                     9.11, 
+                     9.74
+                  ], 
+                  [
+                     "and", 
+                     10.22, 
+                     10.53
+                  ], 
+                  [
+                     "%HESITATION", 
+                     10.53, 
+                     10.7
+                  ], 
+                  [
+                     "what", 
+                     10.7, 
+                     10.94
+                  ], 
+                  [
+                     "about", 
+                     10.94, 
+                     11.23
+                  ], 
+                  [
+                     "you", 
+                     11.23, 
+                     11.58
+                  ]
+               ], 
+               "confidence": 0.939, 
+               "transcript": "what kind of company do you work for I work for an import company and %HESITATION what about you "
+            }
+         ], 
+         "final": true
+      }, 
+      {
+         "alternatives": [
+            {
+               "timestamps": [
+                  [
+                     "I", 
+                     12.64, 
+                     12.78
+                  ], 
+                  [
+                     "work", 
+                     12.78, 
+                     13.04
+                  ], 
+                  [
+                     "at", 
+                     13.04, 
+                     13.17
+                  ], 
+                  [
+                     "a", 
+                     13.17, 
+                     13.23
+                  ], 
+                  [
+                     "bank", 
+                     13.23, 
+                     13.77
+                  ]
+               ], 
+               "confidence": 0.919, 
+               "transcript": "I work at a bank "
+            }
+         ], 
+         "final": true
+      }, 
+      {
+         "alternatives": [
+            {
+               "timestamps": [
+                  [
+                     "are", 
+                     15.13, 
+                     15.24
+                  ], 
+                  [
+                     "you", 
+                     15.24, 
+                     15.41
+                  ], 
+                  [
+                     "a", 
+                     15.41, 
+                     15.47
+                  ], 
+                  [
+                     "bank", 
+                     15.47, 
+                     15.77
+                  ], 
+                  [
+                     "teller", 
+                     15.77, 
+                     16.25
+                  ]
+               ], 
+               "confidence": 0.915, 
+               "transcript": "are you a bank teller "
+            }
+         ], 
+         "final": true
+      }, 
+      {
+         "alternatives": [
+            {
+               "timestamps": [
+                  [
+                     "now", 
+                     17.85, 
+                     18.33
+                  ], 
+                  [
+                     "all", 
+                     18.33, 
+                     18.72
+                  ]
+               ], 
+               "confidence": 0.647, 
+               "transcript": "now all "
+            }
+         ], 
+         "final": true
+      }, 
+      {
+         "alternatives": [
+            {
+               "timestamps": [
+                  [
+                     "I", 
+                     19.84, 
+                     19.96
+                  ], 
+                  [
+                     "am", 
+                     19.96, 
+                     20.07
+                  ], 
+                  [
+                     "the", 
+                     20.07, 
+                     20.24
+                  ], 
+                  [
+                     "owner", 
+                     20.24, 
+                     20.75
+                  ]
+               ], 
+               "confidence": 0.876, 
+               "transcript": "I am the owner "
+            }
+         ], 
+         "final": true
+      }
+   ], 
+   "result_index": 0, 
+   "speaker_labels": [
+      {
+         "from": 0.63, 
+         "to": 0.92, 
+         "speaker": 0, 
+         "confidence": 0.5, 
+         "final": false
+      }, 
+      {
+         "from": 0.92, 
+         "to": 1.04, 
+         "speaker": 0, 
+         "confidence": 0.5, 
+         "final": false
+      }, 
+      {
+         "from": 1.04, 
+         "to": 1.21, 
+         "speaker": 0, 
+         "confidence": 0.5, 
+         "final": false
+      }, 
+      {
+         "from": 1.21, 
+         "to": 1.78, 
+         "speaker": 0, 
+         "confidence": 0.5, 
+         "final": false
+      }, 
+      {
+         "from": 2.62, 
+         "to": 2.68, 
+         "speaker": 1, 
+         "confidence": 0.667, 
+         "final": false
+      }, 
+      {
+         "from": 2.68, 
+         "to": 2.93, 
+         "speaker": 1, 
+         "confidence": 0.667, 
+         "final": false
+      }, 
+      {
+         "from": 2.93, 
+         "to": 3.08, 
+         "speaker": 1, 
+         "confidence": 0.667, 
+         "final": false
+      }, 
+      {
+         "from": 3.08, 
+         "to": 3.18, 
+         "speaker": 1, 
+         "confidence": 0.667, 
+         "final": false
+      }, 
+      {
+         "from": 3.18, 
+         "to": 3.54, 
+         "speaker": 1, 
+         "confidence": 0.667, 
+         "final": false
+      }, 
+      {
+         "from": 3.54, 
+         "to": 4.29, 
+         "speaker": 1, 
+         "confidence": 0.667, 
+         "final": false
+      }, 
+      {
+         "from": 5.14, 
+         "to": 5.41, 
+         "speaker": 0, 
+         "confidence": 0.642, 
+         "final": false
+      }, 
+      {
+         "from": 5.41, 
+         "to": 5.72, 
+         "speaker": 0, 
+         "confidence": 0.642, 
+         "final": false
+      }, 
+      {
+         "from": 5.72, 
+         "to": 5.81, 
+         "speaker": 0, 
+         "confidence": 0.642, 
+         "final": false
+      }, 
+      {
+         "from": 5.81, 
+         "to": 6.25, 
+         "speaker": 0, 
+         "confidence": 0.642, 
+         "final": false
+      }, 
+      {
+         "from": 6.25, 
+         "to": 6.4, 
+         "speaker": 0, 
+         "confidence": 0.642, 
+         "final": false
+      }, 
+      {
+         "from": 6.4, 
+         "to": 6.56, 
+         "speaker": 0, 
+         "confidence": 0.642, 
+         "final": false
+      }, 
+      {
+         "from": 6.56, 
+         "to": 6.83, 
+         "speaker": 0, 
+         "confidence": 0.642, 
+         "final": false
+      }, 
+      {
+         "from": 6.83, 
+         "to": 7.22, 
+         "speaker": 0, 
+         "confidence": 0.642, 
+         "final": false
+      }, 
+      {
+         "from": 7.7, 
+         "to": 7.77, 
+         "speaker": 1, 
+         "confidence": 0.509, 
+         "final": false
+      }, 
+      {
+         "from": 7.77, 
+         "to": 8.04, 
+         "speaker": 1, 
+         "confidence": 0.509, 
+         "final": false
+      }, 
+      {
+         "from": 8.04, 
+         "to": 8.34, 
+         "speaker": 1, 
+         "confidence": 0.509, 
+         "final": false
+      }, 
+      {
+         "from": 8.34, 
+         "to": 8.57, 
+         "speaker": 1, 
+         "confidence": 0.509, 
+         "final": false
+      }, 
+      {
+         "from": 8.57, 
+         "to": 9.08, 
+         "speaker": 1, 
+         "confidence": 0.509, 
+         "final": false
+      }, 
+      {
+         "from": 9.11, 
+         "to": 9.74, 
+         "speaker": 1, 
+         "confidence": 0.511, 
+         "final": false
+      }, 
+      {
+         "from": 10.22, 
+         "to": 10.53, 
+         "speaker": 1, 
+         "confidence": 0.544, 
+         "final": false
+      }, 
+      {
+         "from": 10.53, 
+         "to": 10.7, 
+         "speaker": 1, 
+         "confidence": 0.544, 
+         "final": false
+      }, 
+      {
+         "from": 10.7, 
+         "to": 10.94, 
+         "speaker": 1, 
+         "confidence": 0.544, 
+         "final": false
+      }, 
+      {
+         "from": 10.94, 
+         "to": 11.23, 
+         "speaker": 1, 
+         "confidence": 0.544, 
+         "final": false
+      }, 
+      {
+         "from": 11.23, 
+         "to": 11.58, 
+         "speaker": 1, 
+         "confidence": 0.544, 
+         "final": false
+      }, 
+      {
+         "from": 12.64, 
+         "to": 12.78, 
+         "speaker": 0, 
+         "confidence": 0.591, 
+         "final": false
+      }, 
+      {
+         "from": 12.78, 
+         "to": 13.04, 
+         "speaker": 0, 
+         "confidence": 0.591, 
+         "final": false
+      }, 
+      {
+         "from": 13.04, 
+         "to": 13.17, 
+         "speaker": 0, 
+         "confidence": 0.591, 
+         "final": false
+      }, 
+      {
+         "from": 13.17, 
+         "to": 13.23, 
+         "speaker": 0, 
+         "confidence": 0.591, 
+         "final": false
+      }, 
+      {
+         "from": 13.23, 
+         "to": 13.77, 
+         "speaker": 0, 
+         "confidence": 0.591, 
+         "final": false
+      }, 
+      {
+         "from": 15.13, 
+         "to": 15.24, 
+         "speaker": 1, 
+         "confidence": 0.494, 
+         "final": false
+      }, 
+      {
+         "from": 15.24, 
+         "to": 15.41, 
+         "speaker": 1, 
+         "confidence": 0.494, 
+         "final": false
+      }, 
+      {
+         "from": 15.41, 
+         "to": 15.47, 
+         "speaker": 1, 
+         "confidence": 0.494, 
+         "final": false
+      }, 
+      {
+         "from": 15.47, 
+         "to": 15.77, 
+         "speaker": 1, 
+         "confidence": 0.494, 
+         "final": false
+      }, 
+      {
+         "from": 15.77, 
+         "to": 16.25, 
+         "speaker": 1, 
+         "confidence": 0.494, 
+         "final": false
+      }, 
+      {
+         "from": 17.85, 
+         "to": 18.33, 
+         "speaker": 0, 
+         "confidence": 0.607, 
+         "final": false
+      }, 
+      {
+         "from": 18.33, 
+         "to": 18.72, 
+         "speaker": 0, 
+         "confidence": 0.607, 
+         "final": false
+      }, 
+      {
+         "from": 19.84, 
+         "to": 19.96, 
+         "speaker": 0, 
+         "confidence": 0.59, 
+         "final": false
+      }, 
+      {
+         "from": 19.96, 
+         "to": 20.07, 
+         "speaker": 0, 
+         "confidence": 0.59, 
+         "final": false
+      }, 
+      {
+         "from": 20.07, 
+         "to": 20.24, 
+         "speaker": 0, 
+         "confidence": 0.59, 
+         "final": false
+      }, 
+      {
+         "from": 20.24, 
+         "to": 20.75, 
+         "speaker": 0, 
+         "confidence": 0.59, 
+         "final": true
+      }
+   ]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "IC_LOGIN_CMD",
+  "path": "/opt/wks/ftwta/WebContent/res",
+  "cmd": "/usr/local/bin/ibmcloud login target --apikey @apikey0",
+  "nr": 2
+}
