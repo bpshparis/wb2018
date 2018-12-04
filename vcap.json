@@ -1,0 +1,28 @@
+{
+  "speech_to_text": [
+    {
+      "credentials": {
+        "apikey": "kKx8ud2t1Lx4NT_ScWn5C9wEyNNeDx2wLRaOUICi7BQp",
+        "iam_apikey_description": "Auto generated apikey during resource-key operation for Instance - crn:v1:bluemix:public:speech-to-text:us-east:a/7bddd4099067429392e2cf4f4709f1c5:ae2ed620-cdf0-4e88-b0d9-c32a28caa4fe::",
+        "iam_apikey_name": "auto-generated-apikey-abb4c88a-06be-4fae-9115-8a5017775d86",
+        "iam_role_crn": "crn:v1:bluemix:public:iam::::serviceRole:Writer",
+        "iam_serviceid_crn": "crn:v1:bluemix:public:iam-identity::a/7bddd4099067429392e2cf4f4709f1c5::serviceid:ServiceId-3c33bd8a-37f7-4efb-a884-a787564f1ed8",
+        "url": "https://gateway-wdc.watsonplatform.net/speech-to-text/api"
+      },
+      "name": "s2t0"
+    }
+  ],
+  "tone_analyzer": [
+    {
+      "credentials": {
+        "apikey": "xdV_2mbjDY5rd7GWm6SItoUw8eonDjpHMxSNb_B14wbV",
+        "iam_apikey_description": "Auto generated apikey during resource-key operation for Instance - crn:v1:bluemix:public:tone-analyzer:us-east:a/7bddd4099067429392e2cf4f4709f1c5:289b6177-6f24-459c-84fc-f900523e9280::",
+        "iam_apikey_name": "auto-generated-apikey-ac965f02-15b3-4c44-99e8-61e45b31cda3",
+        "iam_role_crn": "crn:v1:bluemix:public:iam::::serviceRole:Writer",
+        "iam_serviceid_crn": "crn:v1:bluemix:public:iam-identity::a/7bddd4099067429392e2cf4f4709f1c5::serviceid:ServiceId-cca8eae8-1e21-4cb1-89cb-855779d1c22c",
+        "url": "https://gateway-wdc.watsonplatform.net/tone-analyzer/api"
+      },
+      "name": "ta0"
+    }
+  ]
+}

@@ -20,10 +20,10 @@ import javax.servlet.annotation.WebListener;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.ekaly.tools.Cmd;
+import com.ekaly.tools.BasicAuthInterceptor;
 import com.ekaly.tools.Tools;
+import com.ekaly.tools.UnsafeOkHttpClient;
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.ibm.watson.developer_cloud.service.security.IamOptions;
 import com.ibm.watson.developer_cloud.speech_to_text.v1.SpeechToText;
@@ -31,6 +31,10 @@ import com.ibm.watson.developer_cloud.speech_to_text.v1.model.RecognizeOptions;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.ToneAnalyzer;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneChatOptions;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneOptions;
+
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
 /**
  * Application Lifecycle Listener implementation class ContextListener
@@ -49,6 +53,8 @@ public class ContextListener implements ServletContextListener {
 	SpeechToText s2t;
 	RecognizeOptions.Builder rob;
 	List<Map<String, Object>> historical = new ArrayList<Map<String, Object>>();
+	OkHttpClient taOkHttp;
+	Request.Builder tarb;
 	
     /**
      * Default constructor. 
@@ -79,11 +85,12 @@ public class ContextListener implements ServletContextListener {
     				}
     			}
 
-    			initTA();
-    			System.out.println("TA has been initialized...");
-				arg0.getServletContext().setAttribute("ta", ta);
-				arg0.getServletContext().setAttribute("tob", tob);
-				arg0.getServletContext().setAttribute("tcob", tcob);
+    			initTAOkHttp();
+    			if(taOkHttp != null && tarb != null) {
+	    			System.out.println("TAOkHttp has been initialized...");
+					arg0.getServletContext().setAttribute("taOkHttp", taOkHttp);
+					arg0.getServletContext().setAttribute("tarb", tarb);
+    			}
 				
 				initS2T();
     			System.out.println("S2T has been initialized...");
@@ -128,6 +135,59 @@ public class ContextListener implements ServletContextListener {
     	return null;
 
     }
+
+	@SuppressWarnings("unchecked")
+	public void initTAOkHttp() throws JsonParseException, JsonMappingException, IOException, InterruptedException{
+
+		
+		String url = "";
+		String apikey = "";
+    	String serviceName = props.getProperty("TA_NAME");
+		
+		if(vcap_services != null && !vcap_services.trim().isEmpty()) {
+	    	
+			Map<String, Object> input = Tools.fromJSON(vcap_services);
+			
+			List<Map<String, Object>> l0s = (List<Map<String, Object>>) input.get(serviceName);
+			
+			for(Map<String, Object> l0: l0s){
+				for(Map.Entry<String, Object> e: l0.entrySet()){
+					if(e.getKey().equalsIgnoreCase("credentials")){
+						System.out.println(e.getKey() + "=" + e.getValue());
+						Map<String, Object> credential = (Map<String, Object>) e.getValue();
+						url = (String) credential.get("url");
+						apikey = (String) credential.get("apikey");
+						System.out.println(serviceName + " service key set by VCAP_SERVICES");
+					}
+				}
+			}
+		}
+		
+		if(StringUtils.isNoneEmpty(url, apikey)){
+			
+			try {
+			
+				taOkHttp = new UnsafeOkHttpClient().getUnsafeOkHttpClient().newBuilder()
+						.addInterceptor(new BasicAuthInterceptor("apikey", apikey))
+					    .build();
+					
+				HttpUrl.Builder urlBuilder = HttpUrl.parse(url + props.getProperty("TA_CETONE_POST")).newBuilder();
+				urlBuilder.addQueryParameter("version", props.getProperty("TA_VERSION"));
+				urlBuilder.addQueryParameter("sentences", props.getProperty("TA_SENTENCES"));
+				
+				tarb = new Request.Builder()
+					.addHeader("Content-Language", props.getProperty("TA_CONTENT_LANGUAGE"))
+					.addHeader("Accept-Language", props.getProperty("TA_ACCEPT_LANGUAGE"))
+					.addHeader("Content-Type", "application/json")
+					.url(urlBuilder.toString());		
+			}
+			catch(Exception e) {
+				System.err.println("Warning: OkHttpClient ta was not build successfully !!!");
+				e.printStackTrace(System.err);
+			}
+		}
+	}    
+    
     
     @SuppressWarnings({ "unchecked" })
 	public void initTA() throws JsonParseException, JsonMappingException, IOException, InterruptedException{
@@ -136,6 +196,7 @@ public class ContextListener implements ServletContextListener {
 		String url = "";
 		String username = "";
 		String password = "";
+		String apikey = "";
 		String version = props.getProperty("TA_VERSION");
     	String serviceName = props.getProperty("TA_NAME");
 		
@@ -152,25 +213,10 @@ public class ContextListener implements ServletContextListener {
 						Map<String, Object> credential = (Map<String, Object>) e.getValue();
 						url = (String) credential.get("url");
 						username = (String) credential.get("username");
+						apikey = (String) credential.get("apikey");
 						password = (String) credential.get("password");
 						System.out.println(serviceName + " service key set by VCAP_SERVICES");
 					}
-				}
-			}
-		}
-		else {
-			Path path = Paths.get(realPath + (String) props.getProperty("TA_KEY_CMD"));
-
-			if(Files.exists(path)){
-				
-				Cmd cmd = (Cmd) Tools.fromJSON(path.toFile(), new TypeReference<Cmd>(){});
-				
-				if(cmd != null) {
-					Map<String, Object> key = Tools.fromJSON((String) cmd.run().get("OUTPUT"));
-					username = (String) key.get("username");
-					password = (String) key.get("password");
-					url = (String) key.get("url");
-					System.out.println(serviceName + " service key set by " + cmd.getName());
 				}
 			}
 		}
@@ -179,29 +225,46 @@ public class ContextListener implements ServletContextListener {
 		
 			ta = new ToneAnalyzer(version, username, password);
 			ta.setEndPoint(url);
-	
-			try {
-				tob = new ToneOptions.Builder()
-						  .contentLanguage(props.getProperty("TA_CONTENT_LANGUAGE"))
-						  .sentences(Boolean.valueOf(props.getProperty("TA_SENTENCES")))
-						  .acceptLanguage(props.getProperty("TA_ACCEPT_LANGUAGE"));
-				
-			}
-			catch(Exception e) {
-				System.err.println("Warning: ToneOptions tob was not build successfully !!!");
-			}
+		}
+
+		if(StringUtils.isNoneEmpty(url, apikey)){
 			
 			try {
-				tcob = new ToneChatOptions.Builder()
-						.contentLanguage(props.getProperty("TA_CONTENT_LANGUAGE"))
-						.acceptLanguage(props.getProperty("TA_ACCEPT_LANGUAGE"));
-				
+			
+				IamOptions options = new IamOptions.Builder()
+						  .apiKey(apikey)
+						  .build();
+				ta = new ToneAnalyzer(version, options);
+				ta.setEndPoint(url);
 			}
 			catch(Exception e) {
-				System.err.println("Warning: ToneChatOptions tcob was not build successfully !!!");
+				System.err.println("Warning: ToneAnalyzer ta was not build successfully !!!");
+				e.printStackTrace(System.err);
 			}
+		}
+		
+		
+		try {
+			tob = new ToneOptions.Builder()
+					  .contentLanguage(props.getProperty("TA_CONTENT_LANGUAGE"))
+					  .sentences(Boolean.valueOf(props.getProperty("TA_SENTENCES")))
+					  .acceptLanguage(props.getProperty("TA_ACCEPT_LANGUAGE"));
 			
-		}	
+		}
+		catch(Exception e) {
+			System.err.println("Warning: ToneOptions tob was not build successfully !!!");
+		}
+		
+		try {
+			tcob = new ToneChatOptions.Builder()
+					.contentLanguage(props.getProperty("TA_CONTENT_LANGUAGE"))
+					.acceptLanguage(props.getProperty("TA_ACCEPT_LANGUAGE"));
+			
+		}
+		catch(Exception e) {
+			System.err.println("Warning: ToneChatOptions tcob was not build successfully !!!");
+		}
+		
 
 		System.out.println(ta.getName() + " " + ta.getEndPoint());
 		System.out.println(tob);
@@ -237,23 +300,6 @@ public class ContextListener implements ServletContextListener {
 						apikey = (String) credential.get("apikey");
 						System.out.println(serviceName + " service key set by VCAP_SERVICES");
 					}
-				}
-			}
-		}
-		else {
-			Path path = Paths.get(realPath + (String) props.getProperty("S2T_KEY_CMD"));
-
-			if(Files.exists(path)){
-				
-				Cmd cmd = (Cmd) Tools.fromJSON(path.toFile(), new TypeReference<Cmd>(){});
-				
-				if(cmd != null) {
-					Map<String, Object> key = Tools.fromJSON((String) cmd.run().get("OUTPUT"));
-					username = (String) key.get("username");
-					password = (String) key.get("password");
-					apikey = (String) key.get("apikey");
-					url = (String) key.get("url");
-					System.out.println(serviceName + " service key set by " + cmd.getName());
 				}
 			}
 		}
