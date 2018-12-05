@@ -1,16 +1,7 @@
 package com.ekaly.web;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.naming.InitialContext;
@@ -25,12 +16,6 @@ import com.ekaly.tools.Tools;
 import com.ekaly.tools.UnsafeOkHttpClient;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.ibm.watson.developer_cloud.service.security.IamOptions;
-import com.ibm.watson.developer_cloud.speech_to_text.v1.SpeechToText;
-import com.ibm.watson.developer_cloud.speech_to_text.v1.model.RecognizeOptions;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.ToneAnalyzer;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneChatOptions;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneOptions;
 
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -47,14 +32,11 @@ public class ContextListener implements ServletContextListener {
 	String vcap_services;
 	String realPath;
 	Properties props = new Properties();
-	ToneAnalyzer ta;
-	ToneOptions.Builder tob;
-	ToneChatOptions.Builder tcob;
-	SpeechToText s2t;
-	RecognizeOptions.Builder rob;
-	List<Map<String, Object>> historical = new ArrayList<Map<String, Object>>();
-	OkHttpClient taOkHttp;
+	OkHttpClient ta;
 	Request.Builder tarb;
+	OkHttpClient s2t;
+	Request.Builder s2trb;
+	
 	
     /**
      * Default constructor. 
@@ -78,26 +60,19 @@ public class ContextListener implements ServletContextListener {
     	    	
     			System.out.println("Context has been initialized...");
     			
-    			vcap_services = initVCAP_SERVICES();
-    			if(vcap_services != null) {
-    				if(!vcap_services.trim().isEmpty()) {
-    					System.out.println("VCAP_SERVICES has been initialized...");
-    				}
-    			}
-
-    			initTAOkHttp();
-    			if(taOkHttp != null && tarb != null) {
-	    			System.out.println("TAOkHttp has been initialized...");
-					arg0.getServletContext().setAttribute("taOkHttp", taOkHttp);
+    			initTA();
+    			if(ta != null && tarb != null) {
+	    			System.out.println("TA has been initialized...");
+					arg0.getServletContext().setAttribute("ta", ta);
 					arg0.getServletContext().setAttribute("tarb", tarb);
     			}
-				
-				initS2T();
-    			System.out.println("S2T has been initialized...");
-				arg0.getServletContext().setAttribute("s2t", s2t);
-				arg0.getServletContext().setAttribute("rob", rob);
-				
-				arg0.getServletContext().setAttribute("historical", historical);
+
+    			initS2T();
+    			if(s2t != null && s2trb != null) {
+	    			System.out.println("S2T has been initialized...");
+					arg0.getServletContext().setAttribute("s2t", s2t);
+					arg0.getServletContext().setAttribute("s2trb", s2trb);
+    			}
     			
     		} catch (Exception e) {
     			// TODO Auto-generated catch block
@@ -114,71 +89,28 @@ public class ContextListener implements ServletContextListener {
 		System.out.println("Context has been destroyed...");    	
     }
     
-    public String initVCAP_SERVICES() throws FileNotFoundException, IOException{
-    	
-    	String value = props.getProperty("VCAP_SERVICES");
-    	
-    	if(value != null && !value.trim().isEmpty()){
-			Path path = Paths.get(realPath + value);
-			Charset charset = StandardCharsets.UTF_8;
-			if(Files.exists(path)){
-				System.out.println("VCAP_SERVICES read from " + value + ".");
-				return new String(Files.readAllBytes(path), charset);
-			}
-    	}
-    	else{
-    		vcap_services = System.getenv("VCAP_SERVICES");
-			System.out.println("VCAP_SERVICES System ENV=" + vcap_services);
-    		return vcap_services;
-    	}
-    	
-    	return null;
+	public void initTA() throws JsonParseException, JsonMappingException, IOException, InterruptedException{
 
-    }
-
-	@SuppressWarnings("unchecked")
-	public void initTAOkHttp() throws JsonParseException, JsonMappingException, IOException, InterruptedException{
-
-		
-		String url = "";
-		String apikey = "";
     	String serviceName = props.getProperty("TA_NAME");
-		
-		if(vcap_services != null && !vcap_services.trim().isEmpty()) {
-	    	
-			Map<String, Object> input = Tools.fromJSON(vcap_services);
-			
-			List<Map<String, Object>> l0s = (List<Map<String, Object>>) input.get(serviceName);
-			
-			for(Map<String, Object> l0: l0s){
-				for(Map.Entry<String, Object> e: l0.entrySet()){
-					if(e.getKey().equalsIgnoreCase("credentials")){
-						System.out.println(e.getKey() + "=" + e.getValue());
-						Map<String, Object> credential = (Map<String, Object>) e.getValue();
-						url = (String) credential.get("url");
-						apikey = (String) credential.get("apikey");
-						System.out.println(serviceName + " service key set by VCAP_SERVICES");
-					}
-				}
-			}
-		}
-		
+    	
+		String url = Tools.getCredentialFromVS(serviceName).get("url");
+		String apikey = Tools.getCredentialFromVS(serviceName).get("apikey");
+    	
 		if(StringUtils.isNoneEmpty(url, apikey)){
 			
 			try {
 			
-				taOkHttp = new UnsafeOkHttpClient().getUnsafeOkHttpClient().newBuilder()
+				ta = new UnsafeOkHttpClient().getUnsafeOkHttpClient().newBuilder()
 						.addInterceptor(new BasicAuthInterceptor("apikey", apikey))
 					    .build();
 					
-				HttpUrl.Builder urlBuilder = HttpUrl.parse(url + props.getProperty("TA_CETONE_POST")).newBuilder();
+				HttpUrl.Builder urlBuilder = HttpUrl.parse(url + props.getProperty("TA_TONE_CHAT_METHOD")).newBuilder();
 				urlBuilder.addQueryParameter("version", props.getProperty("TA_VERSION"));
-				urlBuilder.addQueryParameter("sentences", props.getProperty("TA_SENTENCES"));
 				
 				tarb = new Request.Builder()
 					.addHeader("Content-Language", props.getProperty("TA_CONTENT_LANGUAGE"))
 					.addHeader("Accept-Language", props.getProperty("TA_ACCEPT_LANGUAGE"))
-					.addHeader("Content-Type", "application/json")
+					.addHeader("Content-Type", props.getProperty("TA_CONTENT_TYPE"))
 					.url(urlBuilder.toString());		
 			}
 			catch(Exception e) {
@@ -188,155 +120,35 @@ public class ContextListener implements ServletContextListener {
 		}
 	}    
     
-    
-    @SuppressWarnings({ "unchecked" })
-	public void initTA() throws JsonParseException, JsonMappingException, IOException, InterruptedException{
+	public void initS2T() throws JsonParseException, JsonMappingException, IOException, InterruptedException{
 
-		
-		String url = "";
-		String username = "";
-		String password = "";
-		String apikey = "";
-		String version = props.getProperty("TA_VERSION");
-    	String serviceName = props.getProperty("TA_NAME");
-		
-		if(vcap_services != null && !vcap_services.trim().isEmpty()) {
-	    	
-			Map<String, Object> input = Tools.fromJSON(vcap_services);
-			
-			List<Map<String, Object>> l0s = (List<Map<String, Object>>) input.get(serviceName);
-			
-			for(Map<String, Object> l0: l0s){
-				for(Map.Entry<String, Object> e: l0.entrySet()){
-					if(e.getKey().equalsIgnoreCase("credentials")){
-						System.out.println(e.getKey() + "=" + e.getValue());
-						Map<String, Object> credential = (Map<String, Object>) e.getValue();
-						url = (String) credential.get("url");
-						username = (String) credential.get("username");
-						apikey = (String) credential.get("apikey");
-						password = (String) credential.get("password");
-						System.out.println(serviceName + " service key set by VCAP_SERVICES");
-					}
-				}
-			}
-		}
-		
-		if(StringUtils.isNoneEmpty(url, username, password)){
-		
-			ta = new ToneAnalyzer(version, username, password);
-			ta.setEndPoint(url);
-		}
-
+    	String serviceName = props.getProperty("S2T_NAME");
+    	
+		String url = Tools.getCredentialFromVS(serviceName).get("url");
+		String apikey = Tools.getCredentialFromVS(serviceName).get("apikey");
+    	
 		if(StringUtils.isNoneEmpty(url, apikey)){
 			
 			try {
 			
-				IamOptions options = new IamOptions.Builder()
-						  .apiKey(apikey)
-						  .build();
-				ta = new ToneAnalyzer(version, options);
-				ta.setEndPoint(url);
+				s2t = new UnsafeOkHttpClient().getUnsafeOkHttpClient().newBuilder()
+						.addInterceptor(new BasicAuthInterceptor("apikey", apikey))
+					    .build();
+					
+				HttpUrl.Builder urlBuilder = HttpUrl.parse(url + props.getProperty("S2T_RECOGNIZE_METHOD")).newBuilder();
+				urlBuilder.addQueryParameter("model", props.getProperty("S2T_MODEL"));
+				urlBuilder.addQueryParameter("speaker_labels", props.getProperty("S2T_SPEAKER_LABELS"));
+				
+				s2trb = new Request.Builder()
+					.addHeader("Content-Type", props.getProperty("S2T_CONTENT_TYPE"))
+					.addHeader("Transfer-Encoding", props.getProperty("S2T_TRANSFER_ENCODING"))		
+					.url(urlBuilder.toString());		
 			}
 			catch(Exception e) {
-				System.err.println("Warning: ToneAnalyzer ta was not build successfully !!!");
+				System.err.println("Warning: OkHttpClient s2t was not build successfully !!!");
 				e.printStackTrace(System.err);
 			}
 		}
-		
-		
-		try {
-			tob = new ToneOptions.Builder()
-					  .contentLanguage(props.getProperty("TA_CONTENT_LANGUAGE"))
-					  .sentences(Boolean.valueOf(props.getProperty("TA_SENTENCES")))
-					  .acceptLanguage(props.getProperty("TA_ACCEPT_LANGUAGE"));
-			
-		}
-		catch(Exception e) {
-			System.err.println("Warning: ToneOptions tob was not build successfully !!!");
-		}
-		
-		try {
-			tcob = new ToneChatOptions.Builder()
-					.contentLanguage(props.getProperty("TA_CONTENT_LANGUAGE"))
-					.acceptLanguage(props.getProperty("TA_ACCEPT_LANGUAGE"));
-			
-		}
-		catch(Exception e) {
-			System.err.println("Warning: ToneChatOptions tcob was not build successfully !!!");
-		}
-		
-
-		System.out.println(ta.getName() + " " + ta.getEndPoint());
-		System.out.println(tob);
-		System.out.println(tcob);
-		
-		return;
-    }    
-
-	@SuppressWarnings("unchecked")
-	public void initS2T() throws JsonParseException, JsonMappingException, IOException, InterruptedException{
-
-		
-		String url = "";
-		String username = "";
-		String password = "";
-		String apikey = "";
-    	String serviceName = props.getProperty("S2T_NAME");
-		
-		if(vcap_services != null && !vcap_services.trim().isEmpty()) {
-	    	
-			Map<String, Object> input = Tools.fromJSON(vcap_services);
-			
-			List<Map<String, Object>> l0s = (List<Map<String, Object>>) input.get(serviceName);
-			
-			for(Map<String, Object> l0: l0s){
-				for(Map.Entry<String, Object> e: l0.entrySet()){
-					if(e.getKey().equalsIgnoreCase("credentials")){
-						System.out.println(e.getKey() + "=" + e.getValue());
-						Map<String, Object> credential = (Map<String, Object>) e.getValue();
-						url = (String) credential.get("url");
-						username = (String) credential.get("username");
-						password = (String) credential.get("password");
-						apikey = (String) credential.get("apikey");
-						System.out.println(serviceName + " service key set by VCAP_SERVICES");
-					}
-				}
-			}
-		}
-		
-		if(StringUtils.isNoneEmpty(url, username, password)){
-		
-			s2t = new SpeechToText(username, password);
-			s2t.setEndPoint(url);
-			
-		}	
-
-		if(StringUtils.isNoneEmpty(url, apikey)){
-
-			IamOptions options = new IamOptions.Builder()
-					  .apiKey(apikey)
-					  .build();
-
-			s2t = new SpeechToText(options);
-			s2t.setEndPoint(url);
-			
-		}	
-		
-		try {
-			rob = new RecognizeOptions.Builder()
-					.contentType(props.getProperty("S2T_CONTENT_TYPE"))
-					.speakerLabels(true)
-					.model(props.getProperty("S2T_MODEL"));
-			
-		}
-		catch(Exception e) {
-			System.err.println("Warning: RecognizeOptions rob was not build successfully !!!");
-		}
-		
-		System.out.println(s2t.getName() + " " + s2t.getEndPoint());
-		System.out.println(rob);
-		
-		return;
-    }    
+	}    
     
 }

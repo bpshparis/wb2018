@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -16,9 +17,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.ekaly.tools.Tools;
-import com.ibm.watson.developer_cloud.speech_to_text.v1.SpeechToText;
-import com.ibm.watson.developer_cloud.speech_to_text.v1.model.RecognizeOptions;
-import com.ibm.watson.developer_cloud.speech_to_text.v1.model.SpeechRecognitionResults;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Servlet implementation class GetImportedKeysServlet
@@ -51,36 +55,44 @@ public class RecognizeAudioServlet extends HttpServlet {
 
 			Path realPath = Paths.get(getServletContext().getRealPath("/"));
 			Path soundsPath = Paths.get(realPath + "/sounds");
-			Path soundFile = Paths.get(soundsPath + "/sound.mp3");
+			Path soundPath = Paths.get(soundsPath + "/sound.mp3");
+			System.out.println("Files.size(soundPath)=" + Files.size(soundPath));
 			
-			if(!Files.exists(soundFile)) {
-				result.put("ANSWER", soundFile.toString() + " not found.");
-        		result.put("TROUBLESHOOTING", "Have a look at: http://watson-developer-cloud.github.io/java-sdk/docs/java-sdk-6.0.0/com/ibm/watson/developer_cloud/speech_to_text/v1/model/RecognizeOptions.html");
+			if(!Files.exists(soundPath)) {
+				result.put("ANSWER", soundPath.toString() + " not found.");
+        		result.put("TROUBLESHOOTING", "Have a look at: https://console.bluemix.net/apidocs/speech-to-text");
         		throw new Exception();				
 			}
 			
-			SpeechToText s2t = (SpeechToText) request.getServletContext().getAttribute("s2t");
-			RecognizeOptions.Builder rob = (RecognizeOptions.Builder) request.getServletContext().getAttribute("rob");
+			OkHttpClient s2t = (OkHttpClient) request.getServletContext().getAttribute("s2t");
+			Request.Builder s2trb = (Request.Builder) request.getServletContext().getAttribute("s2trb");
+			Properties props = (Properties) request.getServletContext().getAttribute("props");
 			
-			RecognizeOptions ro = rob
-					.audio(soundFile.toFile())
-					.build();
+//			RequestBody body = new MultipartBody.Builder()
+//			.setType(MultipartBody.FORM)
+//	        .addFormDataPart("file", soundPath.toString(), RequestBody.create(MediaType.parse(props.getProperty("S2T_CONTENT_TYPE")), soundPath.toFile()))
+//	        .build();
 			
-			SpeechRecognitionResults analysis = s2t.recognize(ro).execute();
+			RequestBody body = RequestBody.create(MediaType.parse(props.getProperty("S2T_CONTENT_TYPE")), Files.readAllBytes(soundPath));
+			
+			Request s2tr = s2trb
+				.post(body)
+				.build();
+			
+			Response s2tResponse = s2t.newCall(s2tr).execute();
 
-//			Path analysis = Paths.get("/opt/wks/wb2018/res/s2t0.resp.sound1.json");			
+			String analysis = s2tResponse.body().string();
 			
         	if(analysis != null) {
         		
         		Map<Long, Map<String, Object>> whoSaidWhatWhen = Tools.whoSaidWhatWhen(analysis.toString());
-        		System.out.println(Tools.toJSON(whoSaidWhatWhen));
         		request.getServletContext().setAttribute("whoSaidWhatWhen", whoSaidWhatWhen);
     			result.put("STATUS", "OK");
         		result.put("ANSWER", Tools.toJSON(whoSaidWhatWhen));
         		
         	}
         	else {
-        		result.put("ANSWER", "No valid SpeechRecognitionResults object returned.");
+        		result.put("ANSWER", "No valid object returned.");
         		throw new Exception();
         	}
 			
@@ -93,6 +105,7 @@ public class RecognizeAudioServlet extends HttpServlet {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
             result.put("STACKTRACE", sw.toString());
+            e.printStackTrace(System.err);
 		}			
 		
 		finally {

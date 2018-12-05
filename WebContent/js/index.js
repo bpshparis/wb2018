@@ -97,10 +97,12 @@ $("#chooseSound").click(function (){
 
 $('#soundFile').change(function (){
 
+
   var fileInput = document.getElementById('soundFile');
   var file = fileInput.files[0];
   var fd = new FormData();
   fd.append('file', file, 'sound.mp3');
+  console.log(JSON.stringify(fd));
 
   $.ajax({
         url: "US",
@@ -112,7 +114,7 @@ $('#soundFile').change(function (){
         contentType: false,   // tell jQuery not to set contentType
         success: function(data) {
           if(data.STATUS == "OK"){
-
+            console.log(data);
             var fileURL = "sounds/sound.mp3";
           	var audio = $("#player");
           	$("#sound").attr("src", fileURL);
@@ -140,6 +142,7 @@ $("#send").click(function (){
 
     success: function(data) {
       if(data.STATUS == "OK"){
+
         $.ajax({
           type: 'POST',
           url: "ACET",
@@ -265,18 +268,20 @@ function loadDatas(data){
 
   $.each(objects, function(index, object){
 
-    rows.push({
-      sentence: object.sentence,
-      speaker: object.speaker,
-      timestamp: object.when,
-      excited: object.tones.excited,
-      frustrated: object.tones.frustrated,
-      impolite: object.tones.impolite,
-      polite: object.tones.polite,
-      sad: object.tones.sad,
-      satisfied: object.tones.satisfied,
-      sympathetic: object.tones.sympathetic
-    });
+    if(object.tones){
+      rows.push({
+        sentence: object.sentence,
+        speaker: object.speaker,
+        timestamp: object.when,
+        excited: object.tones.excited,
+        frustrated: object.tones.frustrated,
+        impolite: object.tones.impolite,
+        polite: object.tones.polite,
+        sad: object.tones.sad,
+        satisfied: object.tones.satisfied,
+        sympathetic: object.tones.sympathetic
+      });
+    }
 
   })
 

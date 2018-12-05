@@ -1,16 +1,17 @@
 package com.ekaly.test;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Properties;
 
 import com.ekaly.tools.BasicAuthInterceptor;
+import com.ekaly.tools.Tools;
 import com.ekaly.tools.UnsafeOkHttpClient;
-import com.ibm.watson.developer_cloud.service.security.IamOptions;
-import com.ibm.watson.developer_cloud.speech_to_text.v1.SpeechToText;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.ToneAnalyzer;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneAnalysis;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneOptions;
 
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -24,46 +25,47 @@ public class Main3 {
 
 	public static void main(String[] args) throws KeyManagementException, NoSuchAlgorithmException, IOException {
 		
-		IamOptions options = new IamOptions.Builder()
-				  .apiKey("sCf5t09pbloZT7J9tHQ3k3gCuDJ0XYoWtJ4aNEUsyPi-")
-				  .build();
-
-		SpeechToText s2t = new SpeechToText(options);
-		s2t.setEndPoint("https://gateway-wdc.watsonplatform.net/speech-to-text/api");
+		Path projectPath = Paths.get("/opt/wks/wb2018");
 		
-		System.out.println("s2t=" + s2t);
+		Properties props = new Properties();
+		props.load(new FileInputStream(projectPath + "/WebContent/res/conf.properties"));
 		
-		OkHttpClient ta0 = new UnsafeOkHttpClient().getUnsafeOkHttpClient().newBuilder()
-			.addInterceptor(new BasicAuthInterceptor("apikey", "xdV_2mbjDY5rd7GWm6SItoUw8eonDjpHMxSNb_B14wbV"))
-		    .build();
+		String url = Tools.getCredentialFromVS("speech_to_text").get("url");
+		String apikey = Tools.getCredentialFromVS("speech_to_text").get("apikey");
+    	
+		OkHttpClient s2tOkHttp = new UnsafeOkHttpClient().getUnsafeOkHttpClient().newBuilder()
+				.addInterceptor(new BasicAuthInterceptor("apikey", apikey))
+			    .build();
+			
+		HttpUrl.Builder urlBuilder = HttpUrl.parse(url + props.getProperty("S2T_RECOGNIZE_METHOD")).newBuilder();
+		urlBuilder.addQueryParameter("model", props.getProperty("S2T_MODEL"));
+		urlBuilder.addQueryParameter("speaker_labels", props.getProperty("S2T_SPEAKER_LABELS"));
 		
+		Request.Builder s2trb = new Request.Builder()
+			.addHeader("Content-Type", props.getProperty("S2T_CONTENT_TYPE"))
+			.addHeader("Transfer-Encoding", props.getProperty("S2T_TRANSFER_ENCODING"))		
+			.url(urlBuilder.toString());		
+		
+		Path soundPath = Paths.get(projectPath + "/WebContent/playlist/Talking-To-A-Difficult-Customer.mp3");
 		
 //		RequestBody body = new MultipartBody.Builder()
 //			.setType(MultipartBody.FORM)
-//	        .addFormDataPart("File", "images_file", RequestBody.create(MediaType.parse("image/jpeg"), path.toFile()))
+//	        .addFormDataPart("file", soundPath.toString(), RequestBody.create(MediaType.parse(props.getProperty("S2T_CONTENT_TYPE")), soundPath.toFile()))
 //	        .build();
 
-		HttpUrl.Builder urlBuilder = HttpUrl.parse("https://gateway-wdc.watsonplatform.net/tone-analyzer/api/v3/tone").newBuilder();
-		urlBuilder.addQueryParameter("version", "2017-09-21");
-		urlBuilder.addQueryParameter("sentences", String.valueOf(true));
-		String url = urlBuilder.toString();
+		RequestBody body = RequestBody.create(MediaType.parse(props.getProperty("S2T_CONTENT_TYPE")), Files.readAllBytes(soundPath));
 		
-		
-		Request.Builder requestBuilder = new Request.Builder()
-			.addHeader("Content-Language", "fr")
-			.addHeader("Accept-Language", "fr")
-			.addHeader("Content-Type", "application/json")
-			.url(url);		
-
-		String json = "{\"text\": \"On en a gros ! On fait un cul de chouette ?\"}";
-		RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json);		
-		
-		Request request = requestBuilder
+		Request s2tr = s2trb
 			.post(body)
 			.build();
 		
-		Response response = ta0.newCall(request).execute();
-        System.out.println(response.body().string());		
+		Response s2tResponse = s2tOkHttp.newCall(s2tr).execute();
+		Files.write(Paths.get(projectPath + "/s2t.resp.json"), s2tResponse.body().string().getBytes());
+		
+		
+		
+
+		
 		
 //		options = new IamOptions.Builder()
 //				  .apiKey("fLbevJlOcM3EiQYH7lzhfM-iwe3pHOrP0g49OPj0zHhX-")

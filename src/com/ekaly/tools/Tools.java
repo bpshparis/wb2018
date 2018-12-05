@@ -22,6 +22,34 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Tools {
+	
+	@SuppressWarnings("unchecked")
+	public final static Map<String, String> getCredentialFromVS(String serviceName){
+		
+		Map<String, String> result = new HashMap<String, String>();
+		
+		try {
+			Map<String, Object> input = Tools.fromJSON(System.getenv("VCAP_SERVICES"));
+			
+			List<Map<String, Object>> l0s = (List<Map<String, Object>>) input.get(serviceName);
+			
+			for(Map<String, Object> l0: l0s){
+				for(Map.Entry<String, Object> e: l0.entrySet()){
+					if(e.getKey().equalsIgnoreCase("credentials")){
+						Map<String, Object> credential = (Map<String, Object>) e.getValue();
+						result.put("url", (String) credential.get("url"));
+						result.put("apikey", (String) credential.get("apikey"));
+					}
+				}
+			}	
+			return result;
+		}
+		catch(Exception e) {
+			e.printStackTrace(System.err);
+		}
+		return null;
+	}
+	
 
 	public final static String toJSON(Object o){
 		try{

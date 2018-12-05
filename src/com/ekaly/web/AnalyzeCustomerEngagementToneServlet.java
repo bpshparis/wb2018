@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -15,12 +16,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.ekaly.tools.Tools;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.ToneAnalyzer;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneChatOptions;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneChatScore;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.Utterance;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.UtteranceAnalyses;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.UtteranceAnalysis;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Servlet implementation class GetImportedKeysServlet
@@ -40,6 +41,7 @@ public class AnalyzeCustomerEngagementToneServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@SuppressWarnings("unchecked")
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -51,45 +53,61 @@ public class AnalyzeCustomerEngagementToneServlet extends HttpServlet {
 		
 		try{
 
-			@SuppressWarnings("unchecked")
 			Map<Long, Map<String, Object>> whoSaidWhatWhen = (Map<Long, Map<String, Object>>) request.getServletContext().getAttribute("whoSaidWhatWhen");
 			
         	if(!whoSaidWhatWhen.isEmpty()) {
         		
-	        	ToneAnalyzer ta = (ToneAnalyzer) request.getServletContext().getAttribute("ta");
-	        	ToneChatOptions.Builder tcob = (ToneChatOptions.Builder) request.getServletContext().getAttribute("tcob");
+	        	OkHttpClient ta = (OkHttpClient) request.getServletContext().getAttribute("ta");
+	        	Request.Builder tarb = (Request.Builder) request.getServletContext().getAttribute("tarb");
+				Properties props = (Properties) request.getServletContext().getAttribute("props");
 
-	        	List<Utterance> us = new ArrayList<Utterance>();
+	        	Map<String, List<Map<String, String>>> utterances = new HashMap<String, List<Map<String, String>>>();
+	        	List<Map<String, String>> sentences = new ArrayList<Map<String, String>>();
 	        	
 	        	for(Map.Entry<Long, Map<String, Object>> obj: whoSaidWhatWhen.entrySet()){
-	        	
-	        		us.add(new Utterance.Builder()
-	        				.text((String) obj.getValue().get("sentence"))
-	        				.user((String) String.valueOf(obj.getValue().get("speaker")))
-	        				.build());
+	        		Map<String, String> sentence = new HashMap<String, String>();
+	        		sentence.put("text", (String) obj.getValue().get("sentence"));
+	        		sentence.put("user", (String) String.valueOf(obj.getValue().get("speaker")));
+	        		sentences.add(sentence);
 	        	}
 	        	
-	        	ToneChatOptions tco = tcob
-	        			.utterances(us)
-	        			.build();
+	        	utterances.put("utterances", sentences);
 
-	        	UtteranceAnalyses analysis = ta.toneChat(tco).execute();
+	    		RequestBody body = RequestBody.create(MediaType.parse(props.getProperty("TA_CONTENT_TYPE")), Tools.toJSON(utterances).getBytes());		
+	    		
+	    		Request tar = tarb
+	    			.post(body)
+	    			.build();
+	    		
+	    		Response taResponse = ta.newCall(tar).execute();
 	        	
+	    		String analysis = taResponse.body().string();
+	    		
 	        	if(analysis != null) {
 	        		
-	        		for(UtteranceAnalysis ua: analysis.getUtterancesTone()){
-	        			Map<String, Object> obj = whoSaidWhatWhen.get(ua.getUtteranceId());
+	        		List<Map<String, Object>> ust = (List<Map<String, Object>>) Tools.fromJSON(analysis).get("utterances_tone"); 
+
+	        		for(Map<String, Object> ut: ust) {
+
+	        			Long id = Long.parseLong(String.valueOf((Integer) ut.get("utterance_id")));
+	        			Map<String, Object> obj = whoSaidWhatWhen.get(id);
 	        			
-	        			List<ToneChatScore> tones = ua.getTones();
+	        			List<Map<String, Object>> tones = new ArrayList<Map<String, Object>>();
+	        			tones = (List<Map<String, Object>>) ut.get("tones");
+	        			
 	        			Map<String, Double> tonesMap = new HashMap<String, Double>();
 	        			
-		        		if(tones != null) {
-			        		for(ToneChatScore tone: tones) {
-			        			tonesMap.put(tone.getToneId(), tone.getScore());
-			        		}
-		        		}	        			
+	            		if(tones != null) {
+	                		for(Map<String, Object> tone: tones) {
+	                			tonesMap.put((String) tone.get("tone_id"), (double)tone.get("score"));
+	                		}
+	            		}	        			
 	        			
-	        			obj.put("tones", tonesMap);
+	            		if(obj != null) {
+	            			obj.put("tones", tonesMap);
+	            			obj.put("_tones", tones);
+	            		}
+
 	        		}
 	        		
 	        		result.put("ANSWER", whoSaidWhatWhen);
@@ -97,15 +115,15 @@ public class AnalyzeCustomerEngagementToneServlet extends HttpServlet {
 	        		
 	        	}
 	        	else {
-	        		result.put("ANSWER", "No valid UtteranceAnalyses object returned.");
+	        		result.put("ANSWER", "No valid object returned.");
 	        		throw new Exception();
 	        	}
         		
         	}
 			
 	        else {
-        		result.put("ANSWER", "No valid Utterance object received.");
-        		result.put("TROUBLESHOOTING", "Have a look at: http://watson-developer-cloud.github.io/java-sdk/docs/java-sdk-6.0.0/com/ibm/watson/developer_cloud/tone_analyzer/v3/model/Utterance.html");
+        		result.put("ANSWER", "No valid object received.");
+        		result.put("TROUBLESHOOTING", "Have a look at: https://console.bluemix.net/apidocs/tone-analyzer");
         		throw new Exception();
 	        }
 	        
@@ -117,6 +135,7 @@ public class AnalyzeCustomerEngagementToneServlet extends HttpServlet {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
             result.put("STACKTRACE", sw.toString());
+            e.printStackTrace(System.err);
 		}			
 		
 		finally {
