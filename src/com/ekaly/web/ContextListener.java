@@ -1,7 +1,11 @@
 package com.ekaly.web;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.naming.InitialContext;
@@ -11,10 +15,12 @@ import javax.servlet.annotation.WebListener;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.ekaly.tools.Resource;
 import com.ekaly.tools.BasicAuthInterceptor;
 import com.ekaly.tools.Tools;
 import com.ekaly.tools.UnsafeOkHttpClient;
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import okhttp3.HttpUrl;
@@ -36,7 +42,7 @@ public class ContextListener implements ServletContextListener {
 	Request.Builder tarb;
 	OkHttpClient s2t;
 	Request.Builder s2trb;
-	
+	List<Resource> resources;	
 	
     /**
      * Default constructor. 
@@ -59,6 +65,9 @@ public class ContextListener implements ServletContextListener {
     			arg0.getServletContext().setAttribute("props", props);
     	    	
     			System.out.println("Context has been initialized...");
+    			
+    			initVCAP_SERVICES();
+    			System.out.println("VCAP_SERVICES has been initialized...");
     			
     			initTA();
     			if(ta != null && tarb != null) {
@@ -89,19 +98,41 @@ public class ContextListener implements ServletContextListener {
 		System.out.println("Context has been destroyed...");    	
     }
     
+    @SuppressWarnings("unchecked")
+	public void initVCAP_SERVICES() throws FileNotFoundException, IOException{
+    	
+		vcap_services = System.getenv("VCAP_SERVICES");
+		System.out.println("VCAP_SERVICES read from System ENV.");
+
+		System.out.println("vcap_services=" + vcap_services);
+		Map<String, Resource> json = (Map<String, Resource>) Tools.fromJSON(vcap_services, new TypeReference<Map<String, Resource>>(){});
+		resources = Arrays.asList(json.values().toArray(new Resource[0]));
+
+    }
+    
+    
 	public void initTA() throws JsonParseException, JsonMappingException, IOException, InterruptedException{
 
     	String serviceName = props.getProperty("TA_NAME");
     	
-		String url = Tools.getCredentialFromVS(serviceName).get("url");
-		String apikey = Tools.getCredentialFromVS(serviceName).get("apikey");
-    	
-		if(StringUtils.isNoneEmpty(url, apikey)){
+		String url = "";
+		String username = "apikey";
+		String password = "";
+		
+		for(Resource resource: resources) {
+			if(resource.getService().equalsIgnoreCase(serviceName)) {
+				password = resource.getCredentials().get(0).getApikey();
+				url = resource.getCredentials().get(0).getUrl();
+			}
+		}
+		
+		
+		if(StringUtils.isNoneEmpty(url, password)){
 			
 			try {
 			
 				ta = new UnsafeOkHttpClient().getUnsafeOkHttpClient().newBuilder()
-						.addInterceptor(new BasicAuthInterceptor("apikey", apikey))
+						.addInterceptor(new BasicAuthInterceptor(username, password))
 					    .build();
 					
 				HttpUrl.Builder urlBuilder = HttpUrl.parse(url + props.getProperty("TA_TONE_CHAT_METHOD")).newBuilder();
@@ -124,15 +155,23 @@ public class ContextListener implements ServletContextListener {
 
     	String serviceName = props.getProperty("S2T_NAME");
     	
-		String url = Tools.getCredentialFromVS(serviceName).get("url");
-		String apikey = Tools.getCredentialFromVS(serviceName).get("apikey");
+		String url = "";
+		String username = "apikey";
+		String password = "";
+		
+		for(Resource resource: resources) {
+			if(resource.getService().equalsIgnoreCase(serviceName)) {
+				password = resource.getCredentials().get(0).getApikey();
+				url = resource.getCredentials().get(0).getUrl();
+			}
+		}
     	
-		if(StringUtils.isNoneEmpty(url, apikey)){
+		if(StringUtils.isNoneEmpty(url, password)){
 			
 			try {
 			
 				s2t = new UnsafeOkHttpClient().getUnsafeOkHttpClient().newBuilder()
-						.addInterceptor(new BasicAuthInterceptor("apikey", apikey))
+						.addInterceptor(new BasicAuthInterceptor(username, password))
 					    .build();
 					
 				HttpUrl.Builder urlBuilder = HttpUrl.parse(url + props.getProperty("S2T_RECOGNIZE_METHOD")).newBuilder();

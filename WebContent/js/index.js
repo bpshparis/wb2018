@@ -52,7 +52,7 @@ $(document)
     msg += '<li>Load a sample conversation from playlist by clicking ' + playlist + '</li>';
     msg += '</ul>'
 
-    ShowAlert("Welcome to E-KALY WB2018.", msg, "alert-success", 15000);
+    ShowAlert("Welcome to Speech to Customer Engagement.", msg, "alert-success", 15000);
   })
   .ajaxStart(function(){
       $("div#Loading").addClass('show');
